@@ -9,7 +9,7 @@ class Core {
 	fun run(program: ByteArray) {
 		resetMemory()
 		loadProgram(program)
-		startProgram(program)
+		runProgram()
 	}
 
 	private fun loadProgram(program: ByteArray) {
@@ -18,7 +18,8 @@ class Core {
 		}
 	}
 
-	private fun startProgram(program: ByteArray) {
+	private fun runProgram() {
+
 	}
 
 	private fun resetMemory() {

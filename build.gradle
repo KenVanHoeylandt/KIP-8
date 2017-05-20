@@ -1,18 +1,39 @@
-subprojects {
-	group 'com.bytewelder.kip8'
-	version '1.0.0-SNAPSHOT'
+group 'com.bytewelder.kip8'
+version '1.0.0-SNAPSHOT'
 
+repositories {
+	jcenter()
+}
+
+buildscript {
+	ext.kotlin_version = '1.1.2-2'
 	repositories {
 		jcenter()
 	}
-
-	buildscript {
-		ext.kotlin_version = '1.1.2-2'
-		repositories {
-			jcenter()
-		}
-		dependencies {
-			classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-		}
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 	}
+}
+
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+jar {
+	baseName = 'kip8'
+	mainClassName = 'com.bytewelder.kip8.MainKt'
+}
+
+dependencies {
+	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+sourceSets {
+	main.java.srcDirs += 'src/main/kotlin'
+}
+
+tasks.withType(JavaExec) {
+	args = [
+		System.getProperty('kip8.program')
+	]
 }

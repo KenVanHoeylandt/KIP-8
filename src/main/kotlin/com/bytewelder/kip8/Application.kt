@@ -22,19 +22,4 @@ open class Application(val programFile: String) {
 		val program = programOf(programFile)
 		core.run(program)
 	}
-
-	// region JVM application entry
-
-	companion object {
-		@JvmStatic fun main(args: Array<String>) {
-			if (args.isEmpty()) {
-				throw IllegalStateException("must specify ROM in argument")
-			}
-
-			val application = Application(args.get(0))
-			application.run()
-		}
-	}
-
-	// endregion
 }
