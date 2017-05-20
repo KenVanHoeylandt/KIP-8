@@ -1,0 +1,3 @@
+rootProject.name = 'KIP-8'
+
+include ':application'
