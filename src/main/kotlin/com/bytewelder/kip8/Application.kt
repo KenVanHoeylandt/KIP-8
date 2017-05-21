@@ -19,7 +19,6 @@ open class Application(val programFile: String) {
 
 		val virtualMachine = VirtualMachine(screenBuffer)
 		val program = programOf(programFile)
-
 		virtualMachine.run(program)
 	}
 }

@@ -3,7 +3,7 @@ package com.bytewelder.kip8.ui
 /**
  * Thread-safe screen buffer that holds pixel on/off values
  */
-internal class ScreenBuffer(val columns: Int, val rows: Int) {
+class ScreenBuffer(val columns: Int, val rows: Int) {
 	val pixelBuffer = BooleanArray(columns * rows)
 
 	init {
@@ -18,17 +18,10 @@ internal class ScreenBuffer(val columns: Int, val rows: Int) {
 		}
 	}
 
-	fun set(x: Int, y: Int) {
+	fun set(x: Int, y: Int, isOn: Boolean) {
 		synchronized(this) {
 			val index = getIndex(x, y)
-			pixelBuffer[index] = true
-		}
-	}
-
-	fun unset(x: Int, y: Int) {
-		synchronized(this) {
-			val index = getIndex(x, y)
-			pixelBuffer[index] = false
+			pixelBuffer[index] = isOn
 		}
 	}
 
