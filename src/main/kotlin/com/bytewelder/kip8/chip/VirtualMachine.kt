@@ -38,6 +38,7 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 
 			val instruction = readInstruction(currentInstructionAddress)
 			instructionSet.execute(instruction)
+			Thread.sleep(10) // TODO: replace with dynamic delay
 		} while (currentInstructionAddress <= programEndAddress)
 	}
 
