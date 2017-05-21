@@ -96,7 +96,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 	private fun doSkipNextIfKeyPressed(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		val keyCode = vm.registers[register].toInt()
+		val keyCode = vm.registers[register]
 		if (vm.keyboard.isKeyPressed(keyCode)) {
 			vm.currentInstructionAddress += 4
 		} else {
@@ -106,7 +106,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 	private fun doSkipNextIfKeyNotPressed(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		val keyCode = vm.registers[register].toInt()
+		val keyCode = vm.registers[register]
 		if (!vm.keyboard.isKeyPressed(keyCode)) {
 			vm.currentInstructionAddress += 4
 		} else {
@@ -117,7 +117,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	private fun doWaitForKeyPress(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		val key = vm.keyboard.waitForKeyPress()
-		vm.registers[register] = key.toByte()
+		vm.registers[register] = key
 		vm.currentInstructionAddress += 2
 	}
 

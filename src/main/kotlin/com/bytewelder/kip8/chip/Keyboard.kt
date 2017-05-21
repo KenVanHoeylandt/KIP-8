@@ -2,13 +2,31 @@ package com.bytewelder.kip8.chip
 
 import java.awt.KeyboardFocusManager
 import java.awt.event.KeyEvent
-import java.util.concurrent.locks.ReentrantLock
 
 
 class Keyboard {
-	val keyWaitLock = ReentrantLock()
-	var lastKey = 0
-	val keyStates = mutableMapOf<Int, Boolean>()
+	val waitLock = Object()
+	var lastKey = 0.toByte()
+	val keyStates = mutableMapOf<Byte, Boolean>()
+	val keyCodeMap = mapOf<Int, Byte>(
+			Pair(KeyEvent.VK_0, 0x0),
+			Pair(KeyEvent.VK_1, 0x1),
+			Pair(KeyEvent.VK_2, 0x2),
+			Pair(KeyEvent.VK_3, 0x3),
+			Pair(KeyEvent.VK_4, 0x4),
+			Pair(KeyEvent.VK_5, 0x5),
+			Pair(KeyEvent.VK_6, 0x6),
+			Pair(KeyEvent.VK_7, 0x7),
+			Pair(KeyEvent.VK_8, 0x8),
+			Pair(KeyEvent.VK_9, 0x9),
+			Pair(KeyEvent.VK_0, 0x0),
+			Pair(KeyEvent.VK_A, 0xA),
+			Pair(KeyEvent.VK_B, 0xB),
+			Pair(KeyEvent.VK_C, 0xC),
+			Pair(KeyEvent.VK_D, 0xD),
+			Pair(KeyEvent.VK_E, 0xE),
+			Pair(KeyEvent.VK_F, 0xF)
+	)
 
 	init {
 		val keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager()
@@ -22,28 +40,44 @@ class Keyboard {
 	}
 
 	private fun onKeyReleased(keyCode: Int) {
+		onKeyReleased(translateKeyCode(keyCode))
+	}
+
+	private fun onKeyReleased(keyCode: Byte) {
 		synchronized(keyStates) {
-			keyStates.put(keyCode, false)
+			keyStates[keyCode] = false
 		}
 	}
 
 	private fun onKeyPressed(keyCode: Int) {
-		if (keyWaitLock.isLocked) {
-			keyWaitLock.unlock()
-			lastKey = keyCode
-		}
+		onKeyPressed(translateKeyCode(keyCode))
+	}
+
+	private fun onKeyPressed(keyCode: Byte) {
+		waitLock.notifyAll()
+		lastKey = keyCode
 
 		synchronized(keyStates) {
 			keyStates.put(keyCode, true)
 		}
 	}
 
-	fun waitForKeyPress(): Int {
-		keyWaitLock.lock()
+	fun waitForKeyPress(): Byte {
+		try {
+			waitLock.wait()
+		} catch (caught: InterruptedException) {
+			// ignore
+		}
 		return lastKey
 	}
 
-	fun isKeyPressed(keyCode: Int): Boolean {
-		return keyStates[keyCode]?: false
+	fun isKeyPressed(keyCode: Byte): Boolean {
+		synchronized(keyStates) {
+			return keyStates[keyCode]?: false
+		}
+	}
+
+	fun translateKeyCode(keyCode: Int): Byte {
+		return keyCodeMap[keyCode]?: 0
 	}
 }
