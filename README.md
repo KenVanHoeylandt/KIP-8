@@ -15,6 +15,18 @@ To run your program, execute the following:
 
 # Programs
 
-- [github.com/nictuku/chip-8](https://github.com/nictuku/chip-8)
+## Downloads
+
+Here are some programs that you can download and run:
+
+- [www.pong-story.com/chip8](www.pong-story.com/chip8) ([direct download](http://www.pong-story.com/chip8/chp8_220.zip))
 - [retro.mattmik.com](http://retro.mattmik.com)
-- [www.pong-story.com/chip8/](http://www.pong-story.com/chip8/)
+
+## Verified
+
+This is a list of programs that I've verified to be working.
+
+- IBM
+- MAZE
+- [Morse Code Demo](http://www.mattmik.com/files/chip8/morsecode/morse_demo.ch8)
+- [Heart Monitor Demo](http://www.mattmik.com/files/chip8/heartmonitor/heart_monitor.ch8)
