@@ -77,7 +77,6 @@ class InstructionSet(
 
 		var currentY = 0
 		var anyOff = false
-		println("printing at $posX, $posY")
 
 		while (currentAddress < lastAddress) {
 			val currentByte = vm.memory[currentAddress]
@@ -88,10 +87,7 @@ class InstructionSet(
 					anyOff = true
 				}
 				vm.screenBuffer.set(posX + x, posY + currentY, isOn)
-
-				print(if (isOn) "X" else " ")
 			}
-			print("\n")
 
 			currentY++
 			currentAddress++
