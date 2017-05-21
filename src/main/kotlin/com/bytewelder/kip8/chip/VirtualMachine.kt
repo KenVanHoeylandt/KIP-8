@@ -7,17 +7,17 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 	val programStartAddress = 0x200
 	val registers = ByteArray(16)
 	val memory = ByteArray(4096)
-	var currentInstructionAddress = programStartAddress
 	val instructionSet = InstructionSet(this)
-	var programEndAddress = programStartAddress
 	val random = Random()
 	val soundTimer = SoundTimer()
 	val delayTimer = DelayTimer()
 	val keyboard = Keyboard()
+	var currentInstructionAddress = programStartAddress
+	var programEndAddress = programStartAddress
 	var i = 0
 
 	fun run(program: ByteArray) {
-		resetMemory()
+		reset()
 		loadProgram(program)
 		runProgram()
 	}
@@ -41,18 +41,25 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 		} while (currentInstructionAddress <= programEndAddress)
 	}
 
-	private fun resetMemory() {
+	private fun reset() {
+		// reset all memory variables
 		currentInstructionAddress = -1
 		programEndAddress = -1
 		i = -1
 
+		// reset main memory
 		for (i in 0..memory.lastIndex) {
 			memory[i] = 0
 		}
 
+		// reset registers
 		for (i in 0..registers.lastIndex) {
 			registers[i] = 0
 		}
+
+		// reset timers
+		soundTimer.reset()
+		delayTimer.reset()
 	}
 
 	private fun readInstruction(address: Int): Int {

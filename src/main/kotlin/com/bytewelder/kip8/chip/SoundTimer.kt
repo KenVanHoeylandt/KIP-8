@@ -21,4 +21,8 @@ class SoundTimer {
 			Toolkit.getDefaultToolkit().beep()
 		}
 	}
+
+	fun reset() {
+		value = 0
+	}
 }

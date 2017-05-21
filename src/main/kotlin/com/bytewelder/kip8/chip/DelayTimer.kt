@@ -15,4 +15,8 @@ class DelayTimer {
 			}
 		}
 	}
+
+	fun reset() {
+		value = 0
+	}
 }

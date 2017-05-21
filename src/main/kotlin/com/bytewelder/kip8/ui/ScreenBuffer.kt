@@ -19,6 +19,12 @@ class ScreenBuffer(val columns: Int, val rows: Int) {
 	}
 
 	fun set(x: Int, y: Int, isOn: Boolean) {
+		if (x < 0 || x >= columns
+				|| y < 0 || y >= rows) {
+			println("WARNING: drawing out of screen bounds at ($x, $y)")
+			return
+		}
+
 		synchronized(this) {
 			val index = getIndex(x, y)
 			pixelBuffer[index] = isOn
