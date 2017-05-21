@@ -33,7 +33,10 @@ sourceSets {
 }
 
 tasks.withType(JavaExec) {
-	args = [
-		System.getProperty('kip8.program')
-	]
+	def program = System.getProperty('kip8.program')
+	if (program) {
+		args = [
+				program
+		]
+	}
 }
