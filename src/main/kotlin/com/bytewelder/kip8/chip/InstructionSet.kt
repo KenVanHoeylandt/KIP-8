@@ -50,41 +50,44 @@ class InstructionSet(private val vm: VirtualMachine) {
 	// region Instructions
 
 	private fun drawSprite(instruction: Int) {
+		// Parse instruction parts
 		val registerX = (instruction and 0x0F00) shr 8
 		val registerY = (instruction and 0x00F0) shr 4
-		val posX = vm.registers[registerX]
-		val posY = vm.registers[registerY]
+		val spriteBytes = instruction and 0x000F
 
-		if (posX < 0 || posX > 0x3F) {
+		// Read position on screen
+		val startPosX = vm.registers[registerX]
+		val startPosY = vm.registers[registerY]
+
+		if (startPosX < 0 || startPosX > 0x3F) {
 			throw IllegalArgumentException("X is out of bounds")
-		} else if (posY < 0 || posY > 0x1F) {
+		} else if (startPosY < 0 || startPosY > 0x1F) {
 			throw IllegalArgumentException("Y is out of bounds")
 		}
 
-		val spriteBytes = instruction and 0x000F
+		var spriteAddressCurrent = vm.i
+		val spriteAddressLast = spriteAddressCurrent + spriteBytes
 
-		var currentAddress = vm.i
-		val lastAddress = currentAddress + spriteBytes
+		var relativePosY = 0
+		var anyPixelsTurnedOff = false
 
-		var currentY = 0
-		var anyOff = false
+		while (spriteAddressCurrent < spriteAddressLast) {
+			val currentByte = vm.memory[spriteAddressCurrent]
 
-		while (currentAddress < lastAddress) {
-			val currentByte = vm.memory[currentAddress]
-
-			for (x in 0..7) {
-				val isOn = ((currentByte.toInt() shr (7 - x)) and 0x1) != 0
+			for (relativePosX in 0..7) {
+				val pixelBit = (currentByte.toInt() shr (7 - relativePosX)) and 0x1
+				val isOn = pixelBit != 0
 				if (!isOn) {
-					anyOff = true
+					anyPixelsTurnedOff = true
 				}
-				vm.screenBuffer.set(posX + x, posY + currentY, isOn)
+				vm.screenBuffer.set(startPosX + relativePosX, startPosY + relativePosY, isOn)
 			}
 
-			currentY++
-			currentAddress++
+			relativePosY++
+			spriteAddressCurrent++
 		}
 
-		vm.registers[0xF] = if (anyOff) 0x01 else 0x00
+		vm.registers[0xF] = if (anyPixelsTurnedOff) 0x01 else 0x00
 		vm.currentInstructionAddress += 2
 	}
 
