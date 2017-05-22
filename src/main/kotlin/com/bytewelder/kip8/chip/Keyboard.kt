@@ -67,7 +67,9 @@ class Keyboard {
 
 	fun waitForKeyPress(): Byte {
 		try {
-			waitLock.wait()
+			synchronized(waitLock) {
+				waitLock.wait()
+			}
 		} catch (caught: InterruptedException) {
 			// ignore
 		}
