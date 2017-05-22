@@ -394,7 +394,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	 */
 	private fun doSetSoundTimerFromRegister(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		vm.soundTimer.value = vm.registers[register]
+		vm.soundTimer.set(vm.registers[register])
 		vm.currentInstructionAddress += 2
 	}
 
