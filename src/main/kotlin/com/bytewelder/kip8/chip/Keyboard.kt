@@ -54,7 +54,10 @@ class Keyboard {
 	}
 
 	private fun onKeyPressed(keyCode: Byte) {
-		waitLock.notifyAll()
+		synchronized(waitLock) {
+			waitLock.notifyAll()
+		}
+
 		lastKey = keyCode
 
 		synchronized(keyStates) {
