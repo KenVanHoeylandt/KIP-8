@@ -407,7 +407,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	 */
 	private fun doAddRegisterToI(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		vm.i += vm.registers[register]
+		vm.i = vm.i + vm.registers[register]
 		vm.currentInstructionAddress += 2
 	}
 
@@ -420,20 +420,22 @@ class InstructionSet(private val vm: VirtualMachine) {
 		for (register in 0..lastRegister) {
 			vm.memory[vm.i + register] = vm.registers[register]
 		}
-		vm.i += lastRegister + 1
+		vm.i = vm.i + lastRegister + 1
 		vm.currentInstructionAddress += 2
 	}
 
 	/**
 	 * FX65 - Write [V0, VX] from memory starting at address I
 	 * I is set to I + X + 1 after copying
+	 *
+	 * Test with: BRIX
 	 */
 	private fun doCopyToAllRegisters(instruction: Int) {
 		val lastRegister = (instruction and 0x0F00) shr 8
 		for (register in 0..lastRegister) {
 			vm.registers[register] = vm.memory[vm.i + register]
 		}
-		vm.i += lastRegister + 1
+		vm.i = vm.i + lastRegister + 1
 		vm.currentInstructionAddress += 2
 	}
 
