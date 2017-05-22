@@ -5,19 +5,27 @@ package com.bytewelder.kip8.chip
  */
 class DelayTimer {
 	private var lastTick = System.currentTimeMillis()
-	var value = 0.toByte()
+	private var value = 0
 
 	fun update() {
 		if (value > 0) {
-			val current = System.currentTimeMillis()
-			if (current - lastTick >= 17) {
-				lastTick = System.currentTimeMillis()
-				value = (value - 1).toByte()
+			val current = System.nanoTime()
+			if (current - lastTick >= 16777777) {
+				lastTick = System.nanoTime()
+				value -= 1
 			}
 		}
 	}
 
 	fun reset() {
 		value = 0
+	}
+
+	fun set(newValue: Byte) {
+		value = newValue.toInt()
+	}
+
+	fun get(): Byte {
+		return value.toByte()
 	}
 }

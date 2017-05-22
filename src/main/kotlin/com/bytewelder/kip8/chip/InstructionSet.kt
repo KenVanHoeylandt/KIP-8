@@ -366,7 +366,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	 */
 	private fun doStoreDelayTimerInRegister(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		vm.registers[register] = vm.delayTimer.value
+		vm.registers[register] = vm.delayTimer.get()
 		vm.currentInstructionAddress += 2
 	}
 
@@ -385,7 +385,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	 */
 	private fun doSetDelayTimerFromRegister(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		vm.delayTimer.value = vm.registers[register]
+		vm.delayTimer.set(vm.registers[register])
 		vm.currentInstructionAddress += 2
 	}
 

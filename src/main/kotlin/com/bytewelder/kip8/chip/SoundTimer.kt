@@ -30,9 +30,9 @@ class SoundTimer {
 
 	private fun updateValue(): Byte {
 		if (value > 0) {
-			val current = System.currentTimeMillis()
-			if (current - lastTick >= 17) {
-				lastTick = System.currentTimeMillis()
+			val current = System.nanoTime()
+			if (current - lastTick >= 16777777) {
+				lastTick = System.nanoTime()
 				return (value - 1).toByte()
 			}
 		}
