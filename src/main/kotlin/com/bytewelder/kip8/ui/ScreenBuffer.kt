@@ -19,9 +19,9 @@ class ScreenBuffer(val columns: Int, val rows: Int) {
 	}
 
 	fun set(x: Int, y: Int, isOn: Boolean) {
+		// Don't draw out of bounds
 		if (x < 0 || x >= columns
 				|| y < 0 || y >= rows) {
-			println("WARNING: drawing out of screen bounds at ($x, $y)")
 			return
 		}
 
