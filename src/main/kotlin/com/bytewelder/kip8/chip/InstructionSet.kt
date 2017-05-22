@@ -40,6 +40,8 @@ class InstructionSet(private val vm: VirtualMachine) {
 			((instruction and 0xF0FF) == 0xF015)  -> doSetDelayTimerFromRegister(instruction)
 			((instruction and 0xF0FF) == 0xF018)  -> doSetSoundTimerFromRegister(instruction)
 			((instruction and 0xF0FF) == 0xF01E)  -> doAddRegisterToI(instruction)
+			((instruction and 0xF0FF) == 0xF029)  -> doSetFontAddressToI(instruction)
+			((instruction and 0xF0FF) == 0xF033)  -> doStoreBinaryCodedDecimal(instruction)
 			((instruction and 0xF0FF) == 0xF055)  -> doCopyFromAllRegisters(instruction)
 			((instruction and 0xF0FF) == 0xF065)  -> doCopyToAllRegisters(instruction)
 			else -> {
@@ -435,5 +437,20 @@ class InstructionSet(private val vm: VirtualMachine) {
 		vm.currentInstructionAddress += 2
 	}
 
+	/**
+	 * FX29 - Set font address from character in VX to I
+	 */
+	private fun doSetFontAddressToI(instruction: Int) {
+		println("FX29 is not implemented")
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * FX33 - Store BCD from register VX in I, I+1, and I+2
+	 */
+	private fun doStoreBinaryCodedDecimal(instruction: Int) {
+		println("FX33 is not implemented")
+		vm.currentInstructionAddress += 2
+	}
 	// endregion
 }
