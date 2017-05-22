@@ -40,6 +40,8 @@ class InstructionSet(private val vm: VirtualMachine) {
 			((instruction and 0xF0FF) == 0xF015)  -> doSetDelayTimerFromRegister(instruction)
 			((instruction and 0xF0FF) == 0xF018)  -> doSetSoundTimerFromRegister(instruction)
 			((instruction and 0xF0FF) == 0xF01E)  -> doAddRegisterToI(instruction)
+			((instruction and 0xF0FF) == 0xF055)  -> doCopyFromAllRegisters(instruction)
+			((instruction and 0xF0FF) == 0xF065)  -> doCopyToAllRegisters(instruction)
 			else -> {
 				vm.currentInstructionAddress += 2
 				println("unknown instruction: " + String.format("%02X", instruction))
@@ -404,6 +406,28 @@ class InstructionSet(private val vm: VirtualMachine) {
 	private fun doAddRegisterToI(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		vm.i += vm.registers[register]
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * FX55 - Store [V0, VX] in memory starting at address I
+	 */
+	private fun doCopyFromAllRegisters(instruction: Int) {
+		val lastRegister = (instruction and 0x0F00) shr 8
+		for (register in 0..lastRegister) {
+			vm.memory[vm.i + register] = vm.registers[register]
+		}
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * FX65 - Write [V0, VX] from memory starting at address I
+	 */
+	private fun doCopyToAllRegisters(instruction: Int) {
+		val lastRegister = (instruction and 0x0F00) shr 8
+		for (register in 0..lastRegister) {
+			vm.registers[register] = vm.memory[vm.i + register]
+		}
 		vm.currentInstructionAddress += 2
 	}
 
