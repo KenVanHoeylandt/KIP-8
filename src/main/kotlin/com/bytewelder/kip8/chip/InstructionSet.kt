@@ -49,6 +49,248 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 	// region Instructions
 
+	/**
+	 * 00E0 - Clear the screen
+	 */
+	fun doClearScreen() {
+		vm.screenBuffer.resetBuffer()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 00EE - Return from subroutine
+	 */
+	fun doReturnFromSubRoutine() {
+		vm.currentInstructionAddress = callStack[callStack.lastIndex] + 2
+		callStack.removeAt(callStack.lastIndex)
+	}
+
+	/**
+	 * 1NNN - Go to address NNN
+	 */
+	private fun doJumpToAddress(instruction: Int) {
+		vm.currentInstructionAddress = 0x0FFF and instruction
+	}
+
+	/**
+	 * 2NNN - Call subroutine at address NNN
+	 */
+	private fun doCallSubRoutine(instruction: Int) {
+		callStack.add(vm.currentInstructionAddress)
+		vm.currentInstructionAddress = 0x0FFF and instruction
+	}
+
+	/**
+	 * 3XNN - Skip next instruction if VX equals NN
+	 */
+	private fun doSkipNextIfRegisterEquals(instruction: Int) {
+		val register = (instruction and 0x0F00) shr 8
+		val n = (instruction and 0x00FF).toByte()
+		if (vm.registers[register] == n) {
+			vm.currentInstructionAddress += 4
+		} else {
+			vm.currentInstructionAddress += 2
+		}
+	}
+
+	/**
+	 * 4XNN - Skip next instruction if VX does not equal NN
+	 */
+	private fun doSkipNextIfRegisterNotEquals(instruction: Int) {
+		val register = (instruction and 0x0F00) shr 8
+		val n = (instruction and 0x00FF).toByte()
+		if (vm.registers[register] != n) {
+			vm.currentInstructionAddress += 4
+		} else {
+			vm.currentInstructionAddress += 2
+		}
+	}
+
+	/**
+	 * 5XY0 - Skip next instruction if VX equals VY
+	 */
+	private fun doSkipIfRegisterEqualsRegister(instruction: Int) {
+		val firstRegister = (instruction and 0x0F00) shr 8
+		val secondRegister = (instruction and 0x00F0) shr 4
+		if (vm.registers[firstRegister] == vm.registers[secondRegister]) {
+			vm.currentInstructionAddress += 4
+		} else {
+			vm.currentInstructionAddress += 2
+		}
+	}
+
+	/**
+	 * 6XNN - Set VX to NN
+	 */
+	private fun doSetRegister(instruction: Int) {
+		val register = (0x0F00 and instruction) shr 8
+		val value = (0x00FF and instruction).toByte()
+		vm.registers[register] = value
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 7XNN - Add NN to VX
+	 */
+	private fun doAddToRegister(instruction: Int) {
+		val register = (0x0F00 and instruction) shr 8
+		val value = (0x00FF and instruction).toByte()
+		vm.registers[register] = (vm.registers[register] + value).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY0 - Set VX to value of VY
+	 */
+	private fun doSetRegisterToRegister(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		vm.registers[first] = vm.registers[second]
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY1 - Set VX to (VX OR VY)
+	 */
+	private fun doSetRegistersBitwiseOr(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		vm.registers[first] = (vm.registers[first].toInt() or vm.registers[second].toInt()).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY2 - Set VX to (VX AND VY)
+	 */
+	private fun doSetRegistersBitwiseAnd(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		vm.registers[first] = (vm.registers[first].toInt() and vm.registers[second].toInt()).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY3 - Set VX to (VX XOR VY)
+	 */
+	private fun doSetRegistersBitwiseXor(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		vm.registers[first] = (vm.registers[first].toInt() xor vm.registers[second].toInt()).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY4 - Add VY to VX
+	 * VF is set to 1 when on carry happens or 0 when no carry happens.
+	 */
+	private fun doAddRegisterToRegister(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		val result = vm.registers[first] + vm.registers[second]
+		vm.registers[first] = result.toByte()
+		vm.registers[0xF] = if (result > 0xF) 1 else 0
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY5 - (VX -= VY)
+	 * VF becomes 0 when borrow happens, 1 when no borrow happens
+	 */
+	private fun doSubtractRegisterFromRegister(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		val result = vm.registers[first] - vm.registers[second]
+		vm.registers[first] = result.toByte()
+		vm.registers[0xF] = if (result < 0) 0 else 1 // TODO: check if this is correct
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY6 - VX >> 1
+	 * VF is then set to least significant bit of VX from before shift
+	 */
+	private fun doShiftRegisterOneRight(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		val result = second shr 1
+		vm.registers[first] = result.toByte()
+		vm.registers[0xF] = (second and 0x1).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XY7 - (VX = VY - VX)
+	 * VF becomes 0 when borrow happens, 1 when no borrow happens
+	 */
+	private fun doSubtractRegisterFromRegisterReverse(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		val result = vm.registers[second] - vm.registers[first]
+		vm.registers[first] = result.toByte()
+		vm.registers[0xF] = if (result < 0) 0 else 1 // TODO: check if this is correct
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 8XYE - VX << 1
+	 * VF is then set to the most significant bit of VX from before shift
+	 */
+	private fun doShiftRegisterOneLeft(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		val result = second shl 1
+		vm.registers[first] = result.toByte()
+		vm.registers[0xF] = (second and 0x8000).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * 9XY0 - Skip next if registers not equal
+	 */
+	private fun doSkipNextIfRegistersNotEqual(instruction: Int) {
+		val first = (0x0F00 and instruction) shr 8
+		val second = (0x00F0 and instruction) shr 4
+		if (vm.registers[first] != vm.registers[second]) {
+			vm.currentInstructionAddress += 4
+		} else {
+			vm.currentInstructionAddress += 2
+		}
+	}
+
+	/**
+	 * ANNN - Set I to NNN
+	 */
+	private fun doSetI(instruction: Int) {
+		val value = 0x0FFF and instruction
+		vm.i = value
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * BNNN - Jump to address (NNN + V0)
+	 */
+	private fun doJumpWithRegister0(instruction: Int) {
+		val address = 0x0FFF and instruction
+		vm.currentInstructionAddress = address + vm.registers[0]
+	}
+
+	/**
+	 * CXNN - Set VX to bitwise operation of random number and NN
+	 */
+	private fun doSetRegisterRandom(instruction: Int) {
+		val register = (instruction and 0x0F00) shr 8
+		val mask = 0x00FF and instruction
+		val result = (vm.random.nextInt() and mask)
+		vm.registers[register] = (result and 0xF).toByte()
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * DXYN - Draw sprite at coordinate (VX, VY) with N bytes of information.
+	 * Each byte represents a row of 8 pixels.
+	 * If any pixels are flipped to 0, VF is set to 1.
+	 * If no pixels are flipped, VX is set to 0.
+	 */
 	private fun drawSprite(instruction: Int) {
 		// Parse instruction parts
 		val registerX = (instruction and 0x0F00) shr 8
@@ -91,12 +333,10 @@ class InstructionSet(private val vm: VirtualMachine) {
 		vm.currentInstructionAddress += 2
 	}
 
-	private fun doAddRegisterToI(instruction: Int) {
-		val register = (instruction and 0x0F00) shr 8
-		vm.i += vm.registers[register]
-		vm.currentInstructionAddress += 2
-	}
-
+	/**
+	 * EX9E - Skip next instruction when key is pressed.
+	 * Key value is defined by VX.
+	 */
 	private fun doSkipNextIfKeyPressed(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		val keyCode = vm.registers[register]
@@ -107,6 +347,10 @@ class InstructionSet(private val vm: VirtualMachine) {
 		}
 	}
 
+	/**
+	 * EXA1 - Skip next instruction when key is not pressed.
+	 * Key value is defined by VX.
+	 */
 	private fun doSkipNextIfKeyNotPressed(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		val keyCode = vm.registers[register]
@@ -117,6 +361,18 @@ class InstructionSet(private val vm: VirtualMachine) {
 		}
 	}
 
+	/**
+	 * FX07 - Set VX to delay timer value
+	 */
+	private fun doStoreDelayTimerInRegister(instruction: Int) {
+		val register = (instruction and 0x0F00) shr 8
+		vm.registers[register] = vm.delayTimer.value
+		vm.currentInstructionAddress += 2
+	}
+
+	/**
+	 * FX0A - Wait for key press and store result in VX (blocking operation)
+	 */
 	private fun doWaitForKeyPress(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		val key = vm.keyboard.waitForKeyPress()
@@ -124,188 +380,31 @@ class InstructionSet(private val vm: VirtualMachine) {
 		vm.currentInstructionAddress += 2
 	}
 
-	private fun doSetSoundTimerFromRegister(instruction: Int) {
-		val register = (instruction and 0x0F00) shr 8
-		vm.soundTimer.value = vm.registers[register].toInt()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doStoreDelayTimerInRegister(instruction: Int) {
-		val register = (instruction and 0x0F00) shr 8
-		vm.registers[register] = vm.delayTimer.value.toByte()
-		vm.currentInstructionAddress += 2
-	}
-
+	/**
+	 * FX15 - Set the delay timer to VX
+	 */
 	private fun doSetDelayTimerFromRegister(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		vm.delayTimer.value = vm.registers[register].toInt()
+		vm.delayTimer.value = vm.registers[register]
 		vm.currentInstructionAddress += 2
 	}
 
-	private fun doSetRegisterRandom(instruction: Int) {
+	/**
+	 * FX18 - Set the sound timer to VX
+	 */
+	private fun doSetSoundTimerFromRegister(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		val mask = 0x00FF and instruction
-		val result = (vm.random.nextInt() and mask)
-		vm.registers[register] = result.toByte()
+		vm.soundTimer.value = vm.registers[register]
 		vm.currentInstructionAddress += 2
 	}
 
-	private fun doJumpWithRegister0(instruction: Int) {
-		val address = 0x0FFF and instruction
-		vm.i = address + vm.registers[0]
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetI(instruction: Int) {
-		val value = 0x0FFF and instruction
-		vm.i = value
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSkipNextIfRegistersNotEqual(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		if (vm.registers[first] != vm.registers[second]) {
-			vm.currentInstructionAddress += 4
-		} else {
-			vm.currentInstructionAddress += 2
-		}
-	}
-
-	private fun doShiftRegisterOneLeft(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		val result = second shl 1
-		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = (second and 0x8000).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doShiftRegisterOneRight(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		val result = second shr 1
-		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = (second and 0x1).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSubtractRegisterFromRegister(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		val result = vm.registers[first] - vm.registers[second]
-		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = if (result < 0) 1 else 0 // TODO: check if this is correct
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSubtractRegisterFromRegisterReverse(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		val result = vm.registers[second] - vm.registers[first]
-		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = if (result < 0) 1 else 0 // TODO: check if this is correct
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doAddRegisterToRegister(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		val result = vm.registers[first] + vm.registers[second]
-		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = if (result > 0xF) 1 else 0
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetRegistersBitwiseXor(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() xor vm.registers[second].toInt()).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetRegistersBitwiseAnd(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() and vm.registers[second].toInt()).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetRegistersBitwiseOr(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() or vm.registers[second].toInt()).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetRegisterToRegister(instruction: Int) {
-		val first = (0x0F00 and instruction) shr 8
-		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = vm.registers[second]
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doAddToRegister(instruction: Int) {
-		val register = (0x0F00 and instruction) shr 8
-		val value = (0x00FF and instruction).toByte()
-		vm.registers[register] = (vm.registers[register] + value).toByte()
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSetRegister(instruction: Int) {
-		val register = (0x0F00 and instruction) shr 8
-		val value = (0x00FF and instruction).toByte()
-		vm.registers[register] = value
-		vm.currentInstructionAddress += 2
-	}
-
-	private fun doSkipNextIfRegisterEquals(instruction: Int) {
+	/**
+	 * FX1E - Add VX to I
+	 */
+	private fun doAddRegisterToI(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
-		val n = (instruction and 0x00FF).toByte()
-		if (vm.registers[register] == n) {
-			vm.currentInstructionAddress += 4
-		} else {
-			vm.currentInstructionAddress += 2
-		}
-	}
-
-	private fun doSkipNextIfRegisterNotEquals(instruction: Int) {
-		val register = (instruction and 0x0F00) shr 8
-		val n = (instruction and 0x00FF).toByte()
-		if (vm.registers[register] != n) {
-			vm.currentInstructionAddress += 4
-		} else {
-			vm.currentInstructionAddress += 2
-		}
-	}
-
-	private fun doSkipIfRegisterEqualsRegister(instruction: Int) {
-		val firstRegister = (instruction and 0x0F00) shr 8
-		val secondRegister = (instruction and 0x00F0) shr 4
-		if (vm.registers[firstRegister] == vm.registers[secondRegister]) {
-			vm.currentInstructionAddress += 4
-		} else {
-			vm.currentInstructionAddress += 2
-		}
-	}
-
-	private fun doJumpToAddress(instruction: Int) {
-		vm.currentInstructionAddress = 0x0FFF and instruction
-	}
-
-	private fun doCallSubRoutine(instruction: Int) {
-		callStack.add(vm.currentInstructionAddress)
-		vm.currentInstructionAddress = 0x0FFF and instruction
-	}
-
-	fun doClearScreen() {
-		vm.screenBuffer.resetBuffer()
+		vm.i += vm.registers[register]
 		vm.currentInstructionAddress += 2
-	}
-
-	fun doReturnFromSubRoutine() {
-		vm.currentInstructionAddress = callStack[callStack.lastIndex] + 2
-		callStack.removeAt(callStack.lastIndex)
 	}
 
 	// endregion

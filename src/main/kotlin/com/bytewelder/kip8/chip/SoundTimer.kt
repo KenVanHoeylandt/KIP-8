@@ -1,10 +1,6 @@
 package com.bytewelder.kip8.chip
 
-import java.awt.Toolkit
 import javax.sound.midi.MidiSystem
-import javax.sound.midi.MidiChannel
-import javax.sound.midi.Instrument
-
 
 
 /**
@@ -12,13 +8,13 @@ import javax.sound.midi.Instrument
  */
 class SoundTimer {
 	val lastTick = System.currentTimeMillis()
-	var value = 0
-	val midiSynth = MidiSystem.getSynthesizer()!!
+	var value = 0.toByte()
+	val midiSynthesizer = MidiSystem.getSynthesizer()!!
 
 	init {
-		midiSynth.open()
-		val instruments = midiSynth.defaultSoundbank.instruments
-		midiSynth.loadInstrument(instruments[0])
+		midiSynthesizer.open()
+		val instruments = midiSynthesizer.defaultSoundbank.instruments
+		midiSynthesizer.loadInstrument(instruments[0])
 	}
 
 	fun update() {
@@ -30,19 +26,19 @@ class SoundTimer {
 		}
 	}
 
-	private fun updateSynthForValueChange(newValue: Int) {
+	private fun updateSynthForValueChange(newValue: Byte) {
 		if (newValue > 0) {
-			midiSynth.channels[0].noteOn(60, 100)
+			midiSynthesizer.channels[0].noteOn(60, 100)
 		} else {
-			midiSynth.channels[0].noteOff(60)
+			midiSynthesizer.channels[0].noteOff(60)
 		}
 	}
 
-	private fun updateValue(): Int {
+	private fun updateValue(): Byte {
 		if (value > 0) {
 			val current = System.currentTimeMillis()
 			if (current - lastTick >= 17) {
-				return value - 1
+				return (value - 1).toByte()
 			} else {
 				return value
 			}

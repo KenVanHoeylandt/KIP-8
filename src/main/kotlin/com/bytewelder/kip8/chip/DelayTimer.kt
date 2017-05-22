@@ -5,13 +5,13 @@ package com.bytewelder.kip8.chip
  */
 class DelayTimer {
 	val lastTick = System.currentTimeMillis()
-	var value = 0
+	var value = 0.toByte()
 
 	fun update() {
 		if (value > 0) {
 			val current = System.currentTimeMillis()
 			if (current - lastTick >= 17) {
-				value -= 1
+				value = (value - 1).toByte()
 			}
 		}
 	}
