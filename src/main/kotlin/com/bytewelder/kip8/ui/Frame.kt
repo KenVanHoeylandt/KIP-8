@@ -17,6 +17,7 @@ class Frame(val screen: Screen) : JFrame() {
 
 		title = "KIP-8"
 		defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+		isResizable = false
 		setSize(64 * screen.pixelSize, 32 * screen.pixelSize + y)
 		setLocationRelativeTo(null)
 	}
