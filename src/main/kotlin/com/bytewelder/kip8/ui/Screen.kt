@@ -5,7 +5,7 @@ package com.bytewelder.kip8.ui
  */
 class Screen internal constructor(val screenBuffer: ScreenBuffer, val pixelSize: Int) : javax.swing.JPanel(), java.awt.event.ActionListener {
 	val timer: javax.swing.Timer
-	private val DELAY = 150
+	private val DELAY = 50
 
 	init {
 		timer = javax.swing.Timer(DELAY, this)
@@ -29,13 +29,7 @@ class Screen internal constructor(val screenBuffer: ScreenBuffer, val pixelSize:
 	private fun drawPoint(graphics: java.awt.Graphics2D, x: Int, y: Int) {
 		val fromX = pixelSize * x
 		val fromY = pixelSize * y
-
-		graphics.fillRect(
-				fromX,
-				fromY,
-				pixelSize,
-				pixelSize
-		)
+		graphics.fillRect(fromX, fromY, pixelSize, pixelSize)
 	}
 
 	private fun drawBackground(graphics: java.awt.Graphics2D) {
