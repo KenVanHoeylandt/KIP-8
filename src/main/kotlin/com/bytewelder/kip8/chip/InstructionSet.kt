@@ -411,23 +411,27 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 	/**
 	 * FX55 - Store [V0, VX] in memory starting at address I
+	 * I is set to I + X + 1 after copying
 	 */
 	private fun doCopyFromAllRegisters(instruction: Int) {
 		val lastRegister = (instruction and 0x0F00) shr 8
 		for (register in 0..lastRegister) {
 			vm.memory[vm.i + register] = vm.registers[register]
 		}
+		vm.i += lastRegister + 1
 		vm.currentInstructionAddress += 2
 	}
 
 	/**
 	 * FX65 - Write [V0, VX] from memory starting at address I
+	 * I is set to I + X + 1 after copying
 	 */
 	private fun doCopyToAllRegisters(instruction: Int) {
 		val lastRegister = (instruction and 0x0F00) shr 8
 		for (register in 0..lastRegister) {
 			vm.registers[register] = vm.memory[vm.i + register]
 		}
+		vm.i += lastRegister + 1
 		vm.currentInstructionAddress += 2
 	}
 
