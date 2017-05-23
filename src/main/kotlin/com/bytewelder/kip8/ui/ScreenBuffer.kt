@@ -3,8 +3,14 @@ package com.bytewelder.kip8.ui
 /**
  * Thread-safe screen buffer that holds pixel on/off values
  */
-class ScreenBuffer(val columns: Int, val rows: Int) {
-	val pixelBuffer = BooleanArray(columns * rows)
+class ScreenBuffer(
+		val columns: Int,
+		val rows: Int, val
+		pixelBuffer: BooleanArray)
+{
+
+	constructor(columns: Int, rows: Int) :
+			this(columns, rows, BooleanArray(columns * rows))
 
 	init {
 		resetBuffer()
