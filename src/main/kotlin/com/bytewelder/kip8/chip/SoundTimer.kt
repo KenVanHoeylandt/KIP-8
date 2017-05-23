@@ -7,7 +7,6 @@ import javax.sound.midi.MidiSystem
  * 60 Hz timer
  */
 class SoundTimer {
-	private var lastTick = System.currentTimeMillis()
 	private var value = 0.toByte()
 
 	val midiSynthesizer = MidiSystem.getSynthesizer()!!
@@ -30,14 +29,10 @@ class SoundTimer {
 
 	private fun updateValue(): Byte {
 		if (value > 0) {
-			val current = System.nanoTime()
-			if (current - lastTick >= 16777777) {
-				lastTick = System.nanoTime()
-				return (value - 1).toByte()
-			}
+			return (value - 1).toByte()
+		} else {
+			return value
 		}
-
-		return value
 	}
 
 	fun reset() {

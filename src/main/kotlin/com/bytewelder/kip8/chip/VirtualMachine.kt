@@ -15,6 +15,7 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 	var currentInstructionAddress = programStartAddress
 	var programEndAddress = programStartAddress
 	var i = 0
+	private var lastTick = System.currentTimeMillis()
 
 	fun run(program: ByteArray) {
 		reset()
@@ -33,13 +34,23 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 
 	private fun runProgram() {
 		do {
-			delayTimer.update()
-			soundTimer.update()
 
 			val instruction = readInstruction(currentInstructionAddress)
 			instructionSet.execute(instruction)
-			Thread.sleep(5) // TODO: replace with dynamic delay
-		} while (currentInstructionAddress <= programEndAddress)
+
+			waitForTick()
+
+			delayTimer.update()
+			soundTimer.update()
+		} while (currentInstructionAddress <= programEndAddress) // TODO: remove
+	}
+
+	private fun waitForTick() {
+		val currentMillis = System.currentTimeMillis()
+		val millisPassed = currentMillis - lastTick
+		val waitTime = Math.max(0, 17 - millisPassed)
+		Thread.sleep(waitTime)
+		lastTick = System.currentTimeMillis()
 	}
 
 	private fun reset() {
