@@ -37,6 +37,16 @@ class ScreenBuffer(
 		}
 	}
 
+	fun get(x: Int, y: Int): Boolean {
+		if (x < 0 || x >= columns
+				|| y < 0 || y >= rows) {
+			return false
+		}
+
+		val index = getIndex(x, y)
+		return pixelBuffer[index]
+	}
+
 	fun getIndex(column: Int, row: Int): Int {
 		return column + (row * columns)
 	}

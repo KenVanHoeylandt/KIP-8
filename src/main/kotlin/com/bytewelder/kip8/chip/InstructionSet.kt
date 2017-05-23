@@ -322,11 +322,18 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 			for (relativePosX in 0..7) {
 				val pixelBit = (currentByte.toInt() shr (7 - relativePosX)) and 0x1
-				val isOn = pixelBit != 0
-				if (!isOn) {
+				val posX = startPosX + relativePosX
+				val posY = startPosY + relativePosY
+
+				val shouldBeOn = pixelBit != 0
+				val currentlyOn = vm.screenBuffer.get(posX, posY)
+				val isResultingInOn = currentlyOn xor shouldBeOn
+
+				vm.screenBuffer.set(posX, posY, isResultingInOn)
+
+				if (currentlyOn && !isResultingInOn) {
 					anyPixelsTurnedOff = true
 				}
-				vm.screenBuffer.set(startPosX + relativePosX, startPosY + relativePosY, isOn)
 			}
 
 			relativePosY++
