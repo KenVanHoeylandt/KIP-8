@@ -450,7 +450,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	/**
 	 * FX33 - Store BCD from register VX in I, I+1, and I+2
 	 */
-	fun doStoreBinaryCodedDecimal(instruction: Int) {
+	private fun doStoreBinaryCodedDecimal(instruction: Int) {
 		val register = (instruction and 0x0F00) shr 8
 		val value = vm.registers[register]
 
