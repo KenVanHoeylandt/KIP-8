@@ -460,5 +460,6 @@ class InstructionSet(private val vm: VirtualMachine) {
 
 		vm.currentInstructionAddress += 2
 	}
+
 	// endregion
 }
