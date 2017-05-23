@@ -205,7 +205,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 		val second = (0x00F0 and instruction) shr 4
 		val result = vm.registers[first] - vm.registers[second]
 		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = if (result < 0) 0 else 1 // TODO: check if this is correct
+		vm.registers[0xF] = if (result < 0) 0 else 1
 		vm.currentInstructionAddress += 2
 	}
 
@@ -231,7 +231,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 		val second = (0x00F0 and instruction) shr 4
 		val result = vm.registers[second] - vm.registers[first]
 		vm.registers[first] = result.toByte()
-		vm.registers[0xF] = if (result < 0) 0 else 1 // TODO: check if this is correct
+		vm.registers[0xF] = if (result < 0) 0 else 1
 		vm.currentInstructionAddress += 2
 	}
 
