@@ -10,7 +10,7 @@ import java.awt.EventQueue
 open class Application(val programFile: String) {
 	fun run() {
 		val screenBuffer = ScreenBuffer(64, 32)
-		val screen = Screen(screenBuffer, 8)
+		val screen = Screen(screenBuffer, 12)
 
 		EventQueue.invokeLater {
 			val frame = Frame(screen)
