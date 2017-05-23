@@ -450,8 +450,14 @@ class InstructionSet(private val vm: VirtualMachine) {
 	/**
 	 * FX33 - Store BCD from register VX in I, I+1, and I+2
 	 */
-	private fun doStoreBinaryCodedDecimal(instruction: Int) {
-		println("FX33 is not implemented")
+	fun doStoreBinaryCodedDecimal(instruction: Int) {
+		val register = (instruction and 0x0F00) shr 8
+		val value = vm.registers[register]
+
+		vm.memory[vm.i]     = (value / 100).toByte()
+		vm.memory[vm.i + 1] = ((value % 100) / 10).toByte()
+		vm.memory[vm.i + 2] = (value % 10).toByte()
+
 		vm.currentInstructionAddress += 2
 	}
 	// endregion
