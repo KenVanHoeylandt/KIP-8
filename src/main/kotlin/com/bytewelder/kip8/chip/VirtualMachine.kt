@@ -1,5 +1,6 @@
 package com.bytewelder.kip8.chip
 
+import com.bytewelder.kip8.lang.toIntUnsigned
 import com.bytewelder.kip8.ui.ScreenBuffer
 import java.util.*
 
@@ -75,8 +76,8 @@ class VirtualMachine internal constructor(val screenBuffer: ScreenBuffer) {
 	}
 
 	private fun readInstruction(address: Int): Int {
-		val leftByte = memory[address].toInt() and 0x000000FF
-		val rightByte = memory[address + 1].toInt() and 0x000000FF
+		val leftByte = memory[address].toIntUnsigned()
+		val rightByte = memory[address + 1].toIntUnsigned()
 		val instruction = (leftByte shl 8) or rightByte
 		return instruction
 	}

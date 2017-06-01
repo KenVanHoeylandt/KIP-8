@@ -1,5 +1,7 @@
 package com.bytewelder.kip8.chip
 
+import com.bytewelder.kip8.lang.toIntUnsigned
+
 /**
  * 60 Hz timer
  */
@@ -17,7 +19,7 @@ class DelayTimer {
 	}
 
 	fun set(newValue: Byte) {
-		value = newValue.toInt()
+		value = newValue.toIntUnsigned()
 	}
 
 	fun get(): Byte {

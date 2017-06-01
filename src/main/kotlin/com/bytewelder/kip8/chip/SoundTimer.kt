@@ -1,5 +1,6 @@
 package com.bytewelder.kip8.chip
 
+import com.bytewelder.kip8.lang.toIntUnsigned
 import javax.sound.midi.MidiSystem
 
 
@@ -20,7 +21,7 @@ class SoundTimer {
 	fun update() {
 		val newValue = updateValue()
 
-		if (newValue.toInt() == 0 && value.toInt() != 0) {
+		if (newValue.toIntUnsigned() == 0 && value.toIntUnsigned() != 0) {
 			midiSynthesizer.channels[0].noteOff(60)
 		}
 
@@ -40,9 +41,9 @@ class SoundTimer {
 	}
 
 	fun set(newValue: Byte) {
-		if (newValue.toInt() != 0 && value.toInt() == 0) {
+		if (newValue.toIntUnsigned() != 0 && value.toIntUnsigned() == 0) {
 			midiSynthesizer.channels[0].noteOn(60, 100)
-		} else if (newValue.toInt() == 0 && value.toInt() != 0) {
+		} else if (newValue.toIntUnsigned() == 0 && value.toIntUnsigned() != 0) {
 			midiSynthesizer.channels[0].noteOff(60)
 		}
 

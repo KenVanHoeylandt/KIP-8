@@ -1,5 +1,7 @@
 package com.bytewelder.kip8.chip
 
+import com.bytewelder.kip8.lang.toIntUnsigned
+
 class InstructionSet(private val vm: VirtualMachine) {
 
 	private val callStack = mutableListOf<Int>()
@@ -159,7 +161,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	private fun doSetRegistersBitwiseOr(instruction: Int) {
 		val first = (0x0F00 and instruction) shr 8
 		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() or vm.registers[second].toInt()).toByte()
+		vm.registers[first] = (vm.registers[first].toIntUnsigned() or vm.registers[second].toIntUnsigned()).toByte()
 		vm.currentInstructionAddress += 2
 	}
 
@@ -169,7 +171,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	private fun doSetRegistersBitwiseAnd(instruction: Int) {
 		val first = (0x0F00 and instruction) shr 8
 		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() and vm.registers[second].toInt()).toByte()
+		vm.registers[first] = (vm.registers[first].toIntUnsigned() and vm.registers[second].toIntUnsigned()).toByte()
 		vm.currentInstructionAddress += 2
 	}
 
@@ -179,7 +181,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 	private fun doSetRegistersBitwiseXor(instruction: Int) {
 		val first = (0x0F00 and instruction) shr 8
 		val second = (0x00F0 and instruction) shr 4
-		vm.registers[first] = (vm.registers[first].toInt() xor vm.registers[second].toInt()).toByte()
+		vm.registers[first] = (vm.registers[first].toIntUnsigned() xor vm.registers[second].toIntUnsigned()).toByte()
 		vm.currentInstructionAddress += 2
 	}
 
@@ -321,7 +323,7 @@ class InstructionSet(private val vm: VirtualMachine) {
 			val currentByte = vm.memory[spriteAddressCurrent]
 
 			for (relativePosX in 0..7) {
-				val pixelBit = (currentByte.toInt() shr (7 - relativePosX)) and 0x1
+				val pixelBit = (currentByte.toIntUnsigned() shr (7 - relativePosX)) and 0x1
 				val posX = startPosX + relativePosX
 				val posY = startPosY + relativePosY
 
