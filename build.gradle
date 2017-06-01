@@ -6,9 +6,7 @@ repositories {
 }
 
 buildscript {
-	ext.kotlinVersion = '1.1.2-2'
-	ext.mockitoVersion = '2.7.14'
-	ext.junitVersion = '4.11'
+	ext.kotlinVersion = '1.1.2-3'
 
 	repositories {
 		jcenter()
@@ -29,7 +27,7 @@ jar {
 
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-	testCompile "junit:junit:$junitVersion"
+	testCompile "junit:junit:4.11"
 }
 
 sourceSets {
